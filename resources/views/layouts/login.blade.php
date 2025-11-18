@@ -1,13 +1,10 @@
-{{-- resources/views/layouts/guest.blade.php --}}
-@props(['title' => config('app.name', 'Laravel')])
-
 <!DOCTYPE html>
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
 
-    <title>Gemarc | Inventory System</title>
+    <title>{{ $title ?? 'Login | Inventory System' }}</title>
     <link rel="icon" href="{{ asset('images/gemarclogo.png') }}" type="image/png">
 
     <!-- Fonts -->
@@ -17,9 +14,7 @@
     <!-- Scripts -->
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
-
-<body class="font-sans text-gray-900">
-    {{-- MAIN CONTENT SLOT --}}
+<body class="font-sans text-gray-900 antialiased">
     <div class="min-h-screen">
         {{ $slot }}
     </div>
