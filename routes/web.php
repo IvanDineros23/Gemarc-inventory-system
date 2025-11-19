@@ -21,6 +21,11 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::view('/delivery-entry', 'pages.delivery-entry')->name('delivery.entry');
     Route::view('/stock-movement', 'pages.stock-movement')->name('stock.movement');
     Route::view('/delivery-review', 'pages.delivery-review')->name('delivery.review');
+    Route::get('/product-management', [\App\Http\Controllers\ProductManagementController::class, 'index'])->name('product.management');
+    Route::post('/product-management', [\App\Http\Controllers\ProductManagementController::class, 'store'])->name('product.management.store');
+    Route::get('/product-management/{product}/edit', [\App\Http\Controllers\ProductManagementController::class, 'edit'])->name('product.management.edit');
+    Route::put('/product-management/{product}', [\App\Http\Controllers\ProductManagementController::class, 'update'])->name('product.management.update');
+    Route::delete('/product-management/{product}', [\App\Http\Controllers\ProductManagementController::class, 'destroy'])->name('product.management.destroy');
 });
 
 Route::middleware('auth')->group(function () {

@@ -47,6 +47,7 @@
                             <a href="{{ route('delivery.entry') }}" class="block text-start rounded-lg px-3 py-2 hover:bg-gray-100 text-black {{ request()->routeIs('delivery.entry') ? 'bg-gray-200 font-semibold border-l-4 border-green-600' : '' }}">Delivery Entry</a>
                             <a href="{{ route('stock.movement') }}" class="block text-start rounded-lg px-3 py-2 hover:bg-gray-100 text-black {{ request()->routeIs('stock.movement') ? 'bg-gray-200 font-semibold border-l-4 border-green-600' : '' }}">Stock Movement</a>
                             <a href="{{ route('delivery.review') }}" class="block text-start rounded-lg px-3 py-2 hover:bg-gray-100 text-black {{ request()->routeIs('delivery.review') ? 'bg-gray-200 font-semibold border-l-4 border-green-600' : '' }}">Delivery Review</a>
+                            <a href="{{ route('product.management') }}" class="block text-start rounded-lg px-3 py-2 hover:bg-gray-100 text-black {{ request()->routeIs('product.management') ? 'bg-gray-200 font-semibold border-l-4 border-green-600' : '' }}">Product Management</a>
                         </nav>
                     </div>
 
@@ -85,7 +86,7 @@
                     @endisset
 
                     <main class="p-6">
-                        {{ $slot }}
+                        @yield('content')
                     </main>
                 </div>
             </div>
