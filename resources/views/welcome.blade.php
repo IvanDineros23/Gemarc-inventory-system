@@ -30,7 +30,7 @@
 
         <!-- Main Content -->
         <main class="flex-1 min-h-screen flex items-center justify-center relative">
-            <div class="absolute inset-0 bg-cover bg-center opacity-80" style="background-image: url('{{ asset('images/stockroombg.png') }}');"></div>
+            <div class="absolute inset-0 bg-cover bg-center" style="background-image: url('{{ asset('images/stockroombg.png') }}');"></div>
             <div class="relative z-10 w-full h-full flex items-center justify-center">
                 <!-- Optional: Add a welcome message or leave blank for now -->
             </div>

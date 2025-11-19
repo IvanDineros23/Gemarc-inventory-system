@@ -93,9 +93,9 @@
                         {{ __('Log in') }}
                     </x-primary-button>
 
-                    <x-secondary-button class="ms-3 bg-orange-600 text-white hover:bg-orange-700">
+                    <a href="{{ route('register') }}" class="ms-3 bg-orange-600 text-white hover:bg-orange-700 px-4 py-2 rounded-lg font-bold">
                         {{ __('Sign up') }}
-                    </x-secondary-button>
+                    </a>
                 </div>
             </form>
 

@@ -7,7 +7,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
 
-    <title>Gemarc | Inventory System</title>
+    <title>Gemarc LAN Based Inventory System</title>
     <link rel="icon" href="{{ asset('images/gemarclogo.png') }}" type="image/png">
 
     <!-- Fonts -->
@@ -23,5 +23,11 @@
     <div class="min-h-screen">
         {{ $slot }}
     </div>
+
+    @if(session('success'))
+        <div class="fixed top-4 right-4 bg-green-500 text-white px-4 py-2 rounded shadow">
+            {{ session('success') }}
+        </div>
+    @endif
 </body>
 </html>
