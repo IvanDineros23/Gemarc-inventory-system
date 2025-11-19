@@ -57,12 +57,12 @@
                                 <div class="w-full bg-white text-black rounded-md p-3 shadow-sm">
                                     <p class="text-r font-semibold text-black text-center">Hi, {{ Auth::user()->name }}!</p>
 
-                                    <div class="mt-3 flex items-center justify-center space-x-3">
-                                        <a href="{{ route('profile.edit') }}" class="inline-block px-3 py-1 rounded text-sm bg-green-600 text-white hover:bg-green-700">Settings</a>
+                                    <div class="mt-3 flex flex-col items-center gap-2">
+                                        <a href="{{ route('profile.edit') }}" class="inline-block px-20 py-1 rounded text-sm bg-green-600 text-white hover:bg-green-700">Settings</a>
 
                                         <form method="POST" action="{{ route('logout') }}" class="inline-block">
                                             @csrf
-                                            <button type="submit" class="inline-block px-3 py-1 rounded text-sm bg-red-600 text-white hover:bg-red-700">Logout</button>
+                                            <button type="submit" class="inline-block px-20 py-1 rounded text-sm bg-red-600 text-white hover:bg-red-700">Logout</button>
                                         </form>
                                     </div>
                                 </div>

@@ -53,9 +53,34 @@ class ProductManagementController extends Controller
             unset($data['image']);
         }
 
-        \App\Models\Product::create($data);
+        $product = \App\Models\Product::create($data);
+
+        // If the request originated from the Receiving Entry modal, return there.
+        if (request()->input('redirect_to') === 'receiving') {
+            return redirect()->route('receiving.entry')->with('success', 'Product added successfully!');
+        }
 
         return redirect()->route('product.management')->with('success', 'Product added successfully!');
+    }
+
+    /**
+     * AJAX product search used by live search on other pages (returns JSON).
+     */
+    public function search(Request $request)
+    {
+        $q = (string) $request->get('q', '');
+
+        $products = Product::when($q !== '', function ($builder) use ($q) {
+            $builder->where('name', 'like', "%{$q}%")
+                ->orWhere('part_number', 'like', "%{$q}%")
+                ->orWhere('inventory_id', 'like', "%{$q}%")
+                ->orWhere('supplier', 'like', "%{$q}%");
+        })
+        ->orderBy('name')
+        ->limit(100)
+        ->get(['id','part_number','inventory_id','name','supplier','ending_inventory']);
+
+        return response()->json($products);
     }
 
     public function edit(Product $product)
