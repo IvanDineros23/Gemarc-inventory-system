@@ -3,7 +3,7 @@
 @section('title', 'Edit Product')
 
 @section('content')
-<div class="bg-white p-6 rounded shadow max-w-3xl mx-auto">
+<div class="bg-white p-2 rounded shadow max-w-3xl mx-auto">
     <h2 class="text-2xl font-bold mb-4">Edit Product</h2>
 
     @if($errors->any())

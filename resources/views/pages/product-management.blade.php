@@ -7,7 +7,7 @@
 @endsection
 
 @section('content')
-<div class="bg-white p-4 rounded shadow max-w-full mx-auto">
+<div class="bg-white p-2 rounded shadow max-w-full mx-auto">
     {{-- Product Form --}}
     @if($errors->any())
         <div class="mb-4 p-3 bg-red-50 border border-red-200 text-red-700 rounded">
