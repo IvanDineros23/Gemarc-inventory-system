@@ -458,6 +458,72 @@
                 });
             }
 
+            // AJAX submit for Add New Item form so new product appears instantly
+            const addNewItemForm = document.getElementById('addNewItemForm');
+            if (addNewItemForm) {
+                addNewItemForm.addEventListener('submit', async (e) => {
+                    e.preventDefault();
+                    const url = addNewItemForm.action;
+                    const fd = new FormData(addNewItemForm);
+                    try {
+                        const resp = await fetch(url, {
+                            method: 'POST',
+                            body: fd,
+                            headers: { 'X-Requested-With': 'XMLHttpRequest' }
+                        });
+
+                        if (!resp.ok) {
+                            const data = await resp.json().catch(()=>null);
+                            alert('Failed to save item' + (data && data.message ? ': '+data.message : ''));
+                            return;
+                        }
+
+                        const product = await resp.json();
+                        // close modal
+                        closeModal(addModal);
+
+                        // append to receiving table
+                        const tbody = document.getElementById('receivingTableBody');
+                        if (tbody) {
+                            const tr = document.createElement('tr');
+                            tr.className = 'border-b hover:bg-gray-50';
+
+                            const tdPart = document.createElement('td'); tdPart.className = 'px-2 py-2 truncate text-center'; tdPart.textContent = product.part_number || '';
+                            const tdInv = document.createElement('td'); tdInv.className = 'px-2 py-2 truncate text-center'; tdInv.textContent = product.inventory_id || '';
+                            const tdName = document.createElement('td'); tdName.className = 'px-2 py-2 whitespace-normal break-words text-center'; tdName.textContent = product.name || '';
+                            const tdSup = document.createElement('td'); tdSup.className = 'px-2 py-2 truncate text-center'; tdSup.textContent = product.supplier || '';
+                            const tdQty = document.createElement('td'); tdQty.className = 'px-2 py-2 text-center'; tdQty.textContent = product.ending_inventory ?? 0;
+                            const tdAct = document.createElement('td'); tdAct.className = 'px-2 py-2 text-center';
+                            const btn = document.createElement('button'); btn.type='button'; btn.className='inline-block bg-indigo-600 text-white px-3 py-1 rounded receive-btn'; btn.textContent='Receive'; btn.dataset.product = JSON.stringify(product);
+                            tdAct.appendChild(btn);
+
+                            tr.appendChild(tdPart); tr.appendChild(tdInv); tr.appendChild(tdName); tr.appendChild(tdSup); tr.appendChild(tdQty); tr.appendChild(tdAct);
+                            // insert at top
+                            if (tbody.firstChild) tbody.insertBefore(tr, tbody.firstChild);
+                            else tbody.appendChild(tr);
+
+                            // attach handlers
+                            if (typeof window._attachReceiveHandlers === 'function') window._attachReceiveHandlers();
+                        }
+
+                        // refresh dashboard summary cards if present
+                        try {
+                            const sumResp = await fetch('{{ route('api.dashboard.summary') }}', { headers:{ 'Accept':'application/json' } });
+                            if (sumResp.ok) {
+                                const sum = await sumResp.json();
+                                const tp = document.getElementById('card-total-products'); if (tp) tp.textContent = sum.total_products;
+                                const tv = document.getElementById('card-total-stock'); if (tv) tv.textContent = new Intl.NumberFormat('en-PH', { style:'currency', currency:'PHP' }).format(sum.total_stock_value || 0);
+                                const tl = document.getElementById('card-low-stock'); if (tl) tl.textContent = sum.low_stock_count;
+                            }
+                        } catch (e) { /* ignore */ }
+
+                    } catch (err) {
+                        console.error('Add item failed', err);
+                        alert('Failed to save item');
+                    }
+                });
+            }
+
             // ===== Receive Modal (per product) =====
             const receiveModal = document.getElementById('receiveModal');
             const receiveClose = document.getElementById('closeReceiveModal');

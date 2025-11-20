@@ -53,7 +53,11 @@ class ProductManagementController extends Controller
             unset($data['image']);
         }
 
-        $product = \App\Models\Product::create($data);
+            $product = \App\Models\Product::create($data);
+
+            if ($request->wantsJson() || $request->ajax()) {
+                return response()->json($product, 201);
+            }
 
         // If the request originated from the Receiving Entry modal, return there.
         if (request()->input('redirect_to') === 'receiving') {
