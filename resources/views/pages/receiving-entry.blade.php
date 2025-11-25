@@ -130,11 +130,6 @@
                         </div>
                     </div>
 
-                    <p class="text-sm text-gray-600 mt-4">
-                        Click <strong>Receive</strong> on a product to open the receiving details form
-                        (you can attach a details inventory Excel file there).
-                    </p>
-
                     {{-- MANUAL RECEIVINGS LIST --}}
                     <div class="mt-6">
                         <h3 class="text-lg font-semibold mb-2">Manual Receivings</h3>
@@ -176,6 +171,11 @@
                             </table>
                         </div>
                     </div>
+
+                      <p class="text-sm text-gray-600 mt-4">
+                        Click <strong>Receive</strong> on a product to open the receiving details form
+                        (you can attach a details inventory Excel file there).
+                    </p>
 
                     {{-- RECEIVING MODAL (per product) --}}
                     <div id="receiveModal"

@@ -61,28 +61,68 @@ class DashboardController extends Controller
     public function receivingsSeries(Request $request)
     {
         $months = (int) $request->get('months', 6);
+
+        // Use start of month to align the buckets (e.g. Jun 1, Jul 1, ...)
         $end = Carbon::now()->endOfMonth();
         $start = (clone $end)->subMonths($months - 1)->startOfMonth();
 
-        $rows = Receiving::selectRaw("DATE_FORMAT(date_received, '%Y-%m') as ym, SUM(qty_received) as total_qty")
+        // Aggregate qty_received per month from receivings table
+        $recvRows = DB::table('receivings')
+            ->selectRaw("DATE_FORMAT(date_received, '%Y-%m-01') as month_key, SUM(qty_received) as total_qty")
             ->whereBetween('date_received', [$start->toDateString(), $end->toDateString()])
-            ->groupBy('ym')
-            ->orderBy('ym')
-            ->get()
-            ->pluck('total_qty','ym')
+            ->groupBy('month_key')
+            ->orderBy('month_key')
+            ->pluck('total_qty', 'month_key')
             ->toArray();
+
+        // Aggregate product counts per month based on when the product record was created
+        $prodCounts = DB::table('products')
+            ->selectRaw("DATE_FORMAT(DATE(created_at), '%Y-%m-01') as month_key, COUNT(*) as cnt")
+            ->whereBetween('created_at', [$start->toDateString(), $end->toDateString()])
+            ->groupBy('month_key')
+            ->orderBy('month_key')
+            ->pluck('cnt', 'month_key')
+            ->toArray();
+
+        // Merge totals from receivings (qty) and product counts so newly created products count as activity
+        $merged = [];
+        foreach ($recvRows as $k => $v) {
+            $merged[$k] = (int)$v;
+        }
+        foreach ($prodCounts as $k => $v) {
+            if (isset($merged[$k])) $merged[$k] += (int)$v; else $merged[$k] = (int)$v;
+        }
 
         $labels = [];
         $data = [];
         $cursor = $start->copy();
         while ($cursor->lte($end)) {
-            $key = $cursor->format('Y-m');
+            $key = $cursor->format('Y-m-01');
             $labels[] = $cursor->format('M Y');
-            $data[] = isset($rows[$key]) ? (int)$rows[$key] : 0;
+            $data[] = isset($merged[$key]) ? (int)$merged[$key] : 0;
             $cursor->addMonth();
         }
 
-        return response()->json(['labels'=>$labels,'data'=>$data]);
+        // If still all zeros, fallback to counting newly created products per month
+        if (array_sum($data) === 0) {
+            $createdRows = DB::table('products')
+                ->selectRaw("DATE_FORMAT(DATE(created_at), '%Y-%m-01') as month_key, COUNT(*) as cnt")
+                ->whereBetween('created_at', [$start->toDateString(), $end->toDateString()])
+                ->groupBy('month_key')
+                ->orderBy('month_key')
+                ->pluck('cnt', 'month_key')
+                ->toArray();
+
+            $data = [];
+            $cursor = $start->copy();
+            while ($cursor->lte($end)) {
+                $key = $cursor->format('Y-m-01');
+                $data[] = isset($createdRows[$key]) ? (int)$createdRows[$key] : 0;
+                $cursor->addMonth();
+            }
+        }
+
+        return response()->json(['labels' => $labels, 'data' => $data]);
     }
 
     // Top suppliers by inventory value
@@ -105,28 +145,67 @@ class DashboardController extends Controller
     public function stockValueTrend(Request $request)
     {
         $months = (int) $request->get('months', 6);
+
         $end = Carbon::now()->endOfMonth();
         $start = (clone $end)->subMonths($months - 1)->startOfMonth();
 
-        $rows = Receiving::selectRaw("DATE_FORMAT(date_received, '%Y-%m') as ym, SUM(COALESCE(qty_received,0) * COALESCE(unit_price,0)) as value")
+        // Aggregate receivings value per month
+        $recvRows = DB::table('receivings')
+            ->selectRaw("DATE_FORMAT(date_received, '%Y-%m-01') as month_key, SUM(COALESCE(qty_received,0) * COALESCE(unit_price,0)) as total_value")
             ->whereBetween('date_received', [$start->toDateString(), $end->toDateString()])
-            ->groupBy('ym')
-            ->orderBy('ym')
-            ->get()
-            ->pluck('value','ym')
+            ->groupBy('month_key')
+            ->orderBy('month_key')
+            ->pluck('total_value', 'month_key')
             ->toArray();
+
+        // Aggregate from products as well (use created_at month so newly-added products contribute)
+        $prodRows = DB::table('products')
+            ->selectRaw("DATE_FORMAT(DATE(created_at), '%Y-%m-01') as month_key, SUM(COALESCE(qty_received,1) * COALESCE(unit_price,0)) as total_value")
+            ->whereBetween('created_at', [$start->toDateString(), $end->toDateString()])
+            ->groupBy('month_key')
+            ->orderBy('month_key')
+            ->pluck('total_value', 'month_key')
+            ->toArray();
+
+        // Merge totals from both sources so newly created products are visible
+        $merged = [];
+        foreach ($recvRows as $k => $v) {
+            $merged[$k] = (float)$v;
+        }
+        foreach ($prodRows as $k => $v) {
+            if (isset($merged[$k])) $merged[$k] += (float)$v; else $merged[$k] = (float)$v;
+        }
 
         $labels = [];
         $data = [];
         $cursor = $start->copy();
         while ($cursor->lte($end)) {
-            $key = $cursor->format('Y-m');
+            $key = $cursor->format('Y-m-01');
             $labels[] = $cursor->format('M Y');
-            $data[] = isset($rows[$key]) ? (float)$rows[$key] : 0;
+            $data[] = isset($merged[$key]) ? (float)$merged[$key] : 0;
             $cursor->addMonth();
         }
 
-        return response()->json(['labels'=>$labels,'data'=>$data]);
+        // If still all zeros, fallback to summing product unit_price (or qty*unit_price) by created_at month
+        if (array_sum($data) == 0) {
+            $createdVals = DB::table('products')
+                ->selectRaw("DATE_FORMAT(DATE(created_at), '%Y-%m-01') as month_key, SUM(COALESCE(qty_received,1) * COALESCE(unit_price,0)) as total_value")
+                ->whereBetween('created_at', [$start->toDateString(), $end->toDateString()])
+                ->groupBy('month_key')
+                ->orderBy('month_key')
+                ->pluck('total_value', 'month_key')
+                ->toArray();
+
+            $data = [];
+            $cursor = $start->copy();
+            while ($cursor->lte($end)) {
+                $key = $cursor->format('Y-m-01');
+                $data[] = isset($createdVals[$key]) ? (float)$createdVals[$key] : 0;
+                $cursor->addMonth();
+            }
+        }
+
+        return response()->json(['labels' => $labels, 'data' => $data]);
     }
 
     // Export low-stock items as CSV

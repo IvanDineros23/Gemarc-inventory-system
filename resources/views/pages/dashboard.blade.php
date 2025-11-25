@@ -51,7 +51,8 @@
                         <canvas id="receivingsChart"></canvas>
                     </div>
                     <div class="mt-4">
-                        <h4 class="font-semibold mb-2">Stock Value Trend (last 6 months)</h4>
+                        <h4 class="font-semibold mb-2">Incoming Stock Value (last 6 months)</h4>
+                        <div class="text-xs text-gray-500 mb-2">This chart shows incoming value by month (sum of qty_received × unit_price). The Total Stock Value card shows current stock value using ending inventory × unit price.</div>
                         <div class="h-44 md:h-48">
                             <canvas id="stockValueChart"></canvas>
                         </div>
