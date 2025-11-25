@@ -16,7 +16,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/receiving-entry', [\App\Http\Controllers\ReceivingController::class, 'index'])->name('receiving.entry');
     // Receiving endpoints (store and export)
     Route::post('/receiving', [\App\Http\Controllers\ReceivingController::class, 'store'])->name('receiving.store');
+    Route::post('/receiving/manual', [\App\Http\Controllers\ReceivingController::class, 'manualStore'])->name('receiving.manual');
     Route::get('/receiving/export', [\App\Http\Controllers\ReceivingController::class, 'export'])->name('receiving.export');
+    Route::put('/receiving/{receiving}', [\App\Http\Controllers\ReceivingController::class, 'update'])->name('receiving.update');
+    Route::delete('/receiving/{receiving}', [\App\Http\Controllers\ReceivingController::class, 'destroy'])->name('receiving.destroy');
     Route::view('/inventory-per-supplier', 'pages.inventory-per-supplier')->name('inventory.per.supplier');
     Route::view('/inventory-report', 'pages.inventory-report')->name('inventory.report');
     Route::view('/consignment-items', 'pages.consignment-items')->name('consignment.items');

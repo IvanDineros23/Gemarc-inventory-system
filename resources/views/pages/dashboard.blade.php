@@ -19,7 +19,7 @@
                     </div>
                     <div class="bg-white p-4 rounded shadow flex items-center gap-3">
                         <div class="p-3 bg-green-100 rounded flex items-center justify-center">
-                            <img src="{{ asset('images/dollar-symbol.png') }}" alt="Total stock value" class="w-8 h-8 object-contain">
+                            <img src="{{ asset('images/32724.png') }}" alt="Total stock value" class="w-8 h-8 object-contain">
                         </div>
                         <div>
                             <div class="text-sm text-gray-500">Total Stock Value</div>

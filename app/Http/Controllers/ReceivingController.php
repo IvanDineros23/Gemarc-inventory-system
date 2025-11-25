@@ -53,6 +53,9 @@ class ReceivingController extends Controller
             $product->save();
         }
 
+        // Load product relation so AJAX responses include product details
+        $receiving->load('product');
+
         return response()->json($receiving);
     }
 
@@ -62,7 +65,69 @@ class ReceivingController extends Controller
     public function index()
     {
         $products = Product::orderBy('name')->get();
-        return view('pages.receiving-entry', compact('products'));
+        $manualReceivings = Receiving::whereNull('product_id')
+            ->with('product')
+            ->orderBy('created_at', 'desc')
+            ->limit(10)
+            ->get();
+
+        // recently received items linked to products
+        $receivedItems = Receiving::whereNotNull('product_id')
+            ->with('product')
+            ->orderBy('created_at', 'desc')
+            ->limit(10)
+            ->get();
+
+        return view('pages.receiving-entry', compact('products','manualReceivings','receivedItems'));
+    }
+
+    /**
+     * Store a manual receiving entry (not linked to an existing product) submitted by users.
+     */
+    public function manualStore(Request $request)
+    {
+        $validated = $request->validate([
+            'part_number' => 'nullable|string|max:255',
+            'item_name' => 'nullable|string|max:255',
+            'supplier' => 'nullable|string|max:255',
+            'date_received' => 'nullable|date',
+            'fo_number' => 'nullable|string|max:255',
+            'quantity' => 'nullable|integer',
+            'unit_cost' => 'nullable|numeric',
+        ]);
+
+        // try to find existing product by part_number or name
+        $product = null;
+        if (!empty($validated['part_number'])) {
+            $product = Product::where('part_number', $validated['part_number'])->first();
+        }
+        if (!$product && !empty($validated['item_name'])) {
+            $product = Product::where('name', $validated['item_name'])->first();
+        }
+
+        $receiving = Receiving::create([
+            'product_id' => $product ? $product->id : null,
+            'fo_number' => $validated['fo_number'] ?? null,
+            'date_received' => $validated['date_received'] ?? null,
+            'qty_received' => $validated['quantity'] ?? null,
+            'unit_price' => $validated['unit_cost'] ?? null,
+            'beginning_inventory' => null,
+            'ending_inventory' => null,
+            'details_file_path' => null,
+        ]);
+
+        // If we found a matching product, update its ending_inventory
+        if ($product && ($validated['quantity'] ?? null) !== null) {
+            if (is_null($product->ending_inventory)) $product->ending_inventory = 0;
+            $product->ending_inventory = $product->ending_inventory + (int)$validated['quantity'];
+            $product->save();
+        }
+
+        if ($request->wantsJson() || $request->ajax()) {
+            return response()->json($receiving, 201);
+        }
+
+        return redirect()->route('receiving.entry')->with('success', 'Manual receiving saved.');
     }
 
     /**
@@ -105,5 +170,100 @@ class ReceivingController extends Controller
         };
 
         return new StreamedResponse($callback, 200, $headers);
+    }
+
+    /**
+     * Update an existing receiving entry (AJAX-friendly).
+     */
+    public function update(Request $request, Receiving $receiving)
+    {
+        $validator = Validator::make($request->all(), [
+            'qty_received' => 'required|integer',
+            'unit_price' => 'nullable|numeric',
+            'date_received' => 'nullable|date',
+            'fo_number' => 'nullable|string|max:255',
+            'beginning_inventory' => 'nullable|integer',
+            'ending_inventory' => 'nullable|integer',
+            'details_file' => 'nullable|file|mimes:xlsx,xls,csv',
+            // fields used for manual receivings
+            'part_number' => 'nullable|string|max:255',
+            'item_name' => 'nullable|string|max:255',
+            'supplier' => 'nullable|string|max:255',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json(['errors' => $validator->errors()], 422);
+        }
+
+        $oldQty = $receiving->qty_received ?? 0;
+
+        // handle details file replacement if uploaded
+        if ($request->hasFile('details_file')) {
+            // store new file
+            $path = $request->file('details_file')->store('receivings', 'public');
+            // attempt to delete old file if exists
+            if ($receiving->details_file_path) {
+                try { \Illuminate\Support\Facades\Storage::disk('public')->delete($receiving->details_file_path); } catch (\Exception $e) { /* ignore */ }
+            }
+            $receiving->details_file_path = $path;
+        }
+
+        $receiving->fo_number = $request->fo_number ?? $receiving->fo_number;
+        $receiving->date_received = $request->date_received ?? $receiving->date_received;
+        $receiving->qty_received = $request->qty_received;
+        $receiving->unit_price = $request->unit_price ?? $receiving->unit_price;
+        $receiving->beginning_inventory = $request->beginning_inventory ?? $receiving->beginning_inventory;
+        $receiving->ending_inventory = $request->ending_inventory ?? $receiving->ending_inventory;
+
+        // allow updating manual fields for manual receivings (when not linked to a product)
+        if (is_null($receiving->product_id)) {
+            if ($request->has('part_number')) $receiving->part_number = $request->part_number;
+            if ($request->has('item_name')) $receiving->item_name = $request->item_name;
+            if ($request->has('supplier')) $receiving->supplier = $request->supplier;
+        }
+
+        $receiving->save();
+
+        // adjust product inventory if linked
+        if ($receiving->product_id) {
+            $product = Product::find($receiving->product_id);
+            if ($product) {
+                if (is_null($product->ending_inventory)) $product->ending_inventory = 0;
+                $delta = (int)$receiving->qty_received - (int)$oldQty;
+                $product->ending_inventory = $product->ending_inventory + $delta;
+                $product->save();
+            }
+        }
+
+        $receiving->load('product');
+        return response()->json($receiving);
+    }
+
+    /**
+     * Delete a receiving entry and adjust product inventory if linked.
+     */
+    public function destroy(Request $request, Receiving $receiving)
+    {
+        $qty = (int) ($receiving->qty_received ?? 0);
+        $productId = $receiving->product_id;
+
+        // delete file if exists
+        if ($receiving->details_file_path) {
+            try { Storage::disk('public')->delete($receiving->details_file_path); } catch (\Exception $e) { /* ignore */ }
+        }
+
+        $receiving->delete();
+
+        // adjust product inventory if linked
+        if ($productId) {
+            $product = Product::find($productId);
+            if ($product) {
+                if (is_null($product->ending_inventory)) $product->ending_inventory = 0;
+                $product->ending_inventory = max(0, $product->ending_inventory - $qty);
+                $product->save();
+            }
+        }
+
+        return response()->json(['deleted' => true]);
     }
 }
