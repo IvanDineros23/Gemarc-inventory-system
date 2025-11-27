@@ -35,6 +35,10 @@
                 <label class="block font-semibold">Inventory ID</label>
                 <input type="text" name="inventory_id" class="w-full border rounded px-3 py-2">
             </div>
+                <div>
+                    <label class="block font-semibold">Brand</label>
+                    <input type="text" name="brand" class="w-full border rounded px-3 py-2">
+                </div>
             <div>
                 <label class="block font-semibold">Name</label>
                 <input type="text" name="name" class="w-full border rounded px-3 py-2" required>
@@ -88,6 +92,13 @@
             @error('image')
                 <p class="text-red-600 text-sm mt-1">{{ $message }}</p>
             @enderror
+        </div>
+
+        <div class="mt-4">
+            <label class="inline-flex items-center gap-2">
+                <input type="checkbox" name="is_consignment" value="1" class="form-checkbox">
+                <span class="text-sm">Is consignment item</span>
+            </label>
         </div>
 
         <div class="mt-6">
@@ -189,6 +200,10 @@
                     <label class="block font-semibold">Name</label>
                     <input type="text" name="name" id="edit_name" class="w-full border rounded px-3 py-2" required>
                 </div>
+                    <div class="md:col-span-2">
+                        <label class="block font-semibold">Brand</label>
+                        <input type="text" name="brand" id="edit_brand" class="w-full border rounded px-3 py-2">
+                    </div>
                 <div class="md:col-span-2">
                     <label class="block font-semibold">Description</label>
                     <textarea name="description" id="edit_description" class="w-full border rounded px-3 py-2"></textarea>
@@ -229,6 +244,12 @@
                     <label class="block font-semibold">Product Image (optional)</label>
                     <input type="file" name="image" id="edit_image" class="w-full">
                     <div id="edit_image_preview" class="mt-3"></div>
+                </div>
+                <div class="md:col-span-2">
+                    <label class="inline-flex items-center gap-2">
+                        <input type="checkbox" name="is_consignment" id="edit_is_consignment" value="1" class="form-checkbox">
+                        <span class="text-sm">Is consignment item</span>
+                    </label>
                 </div>
             </div>
 
@@ -317,6 +338,7 @@
         // populate fields
         document.getElementById('edit_part_number').value = product.part_number || '';
         document.getElementById('edit_inventory_id').value = product.inventory_id || '';
+        document.getElementById('edit_brand').value = product.brand || '';
         document.getElementById('edit_name').value = product.name || '';
         document.getElementById('edit_description').value = product.description || '';
         document.getElementById('edit_supplier').value = product.supplier || '';
@@ -327,6 +349,7 @@
         document.getElementById('edit_beginning_inventory').value = product.beginning_inventory || '';
         document.getElementById('edit_ending_inventory').value = product.ending_inventory || '';
         document.getElementById('edit_total').value = product.total || '';
+        document.getElementById('edit_is_consignment').checked = product.is_consignment ? true : false;
 
         // set form action to update route
         editForm.action = '/product-management/' + product.id;

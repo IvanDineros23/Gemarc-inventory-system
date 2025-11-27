@@ -13,6 +13,7 @@ class Product extends Model
         'part_number',
         'inventory_id',
         'name',
+        'brand',
         'description',
         'supplier',
         'fo_number',
@@ -23,5 +24,6 @@ class Product extends Model
         'ending_inventory',
         'total',
         'image_path',
+        'is_consignment',
     ];
 }

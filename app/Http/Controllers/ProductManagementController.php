@@ -20,6 +20,7 @@ class ProductManagementController extends Controller
         $validated = $request->validate([
             'part_number' => 'nullable|string|max:255',
             'inventory_id' => 'nullable|string|max:255',
+            'brand' => 'nullable|string|max:255',
             'name' => 'required|string',
             'description' => 'nullable|string',
             'supplier' => 'nullable|string|max:255',
@@ -30,10 +31,13 @@ class ProductManagementController extends Controller
             'beginning_inventory' => 'nullable|integer',
             'ending_inventory' => 'nullable|integer',
             'total' => 'nullable|numeric',
+            'is_consignment' => 'nullable|boolean',
             'image' => 'nullable|image|max:2048',
         ]);
 
         $data = $validated;
+        // ensure boolean flag is stored as 0/1
+        $data['is_consignment'] = $request->has('is_consignment') ? 1 : 0;
 
         // Handle the uploaded image file explicitly and safely
         try {
@@ -60,8 +64,12 @@ class ProductManagementController extends Controller
             }
 
         // If the request originated from the Receiving Entry modal, return there.
-        if (request()->input('redirect_to') === 'receiving') {
+        $redirectTo = request()->input('redirect_to');
+        if ($redirectTo === 'receiving') {
             return redirect()->route('receiving.entry')->with('success', 'Product added successfully!');
+        }
+        if ($redirectTo === 'consignment') {
+            return redirect()->route('consignment.items')->with('success', 'Product added successfully!');
         }
 
         return redirect()->route('product.management')->with('success', 'Product added successfully!');
@@ -97,6 +105,7 @@ class ProductManagementController extends Controller
         $validated = $request->validate([
             'part_number' => 'nullable|string|max:255',
             'inventory_id' => 'nullable|string|max:255',
+            'brand' => 'nullable|string|max:255',
             'name' => 'required|string',
             'description' => 'nullable|string',
             'supplier' => 'nullable|string|max:255',
@@ -107,10 +116,12 @@ class ProductManagementController extends Controller
             'beginning_inventory' => 'nullable|integer',
             'ending_inventory' => 'nullable|integer',
             'total' => 'nullable|numeric',
+            'is_consignment' => 'nullable|boolean',
             'image' => 'nullable|image|max:2048',
         ]);
 
         $data = $validated;
+        $data['is_consignment'] = $request->has('is_consignment') ? 1 : 0;
 
         // Handle new image upload: store and optionally delete old file
         try {

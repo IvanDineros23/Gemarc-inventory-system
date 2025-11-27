@@ -32,7 +32,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/inventory-report', [\App\Http\Controllers\InventoryReportController::class, 'index'])->name('inventory.report');
     Route::get('/inventory-report/print', [\App\Http\Controllers\InventoryReportController::class, 'print'])->name('inventory.report.print');
     Route::get('/inventory-report/download', [\App\Http\Controllers\InventoryReportController::class, 'download'])->name('inventory.report.download');
-    Route::view('/consignment-items', 'pages.consignment-items')->name('consignment.items');
+    Route::get('/consignment-items', [\App\Http\Controllers\ConsignmentController::class, 'index'])->name('consignment.items');
     Route::view('/reorder-level-entry', 'pages.reorder-level-entry')->name('reorder.level.entry');
     Route::view('/delivery-entry', 'pages.delivery-entry')->name('delivery.entry');
     Route::view('/stock-movement', 'pages.stock-movement')->name('stock.movement');

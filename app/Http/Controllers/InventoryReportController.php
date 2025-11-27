@@ -23,7 +23,8 @@ class InventoryReportController extends Controller
         $grandTotal = 0;
 
         foreach ($products as $product) {
-            $brandName = $product->brand ?? 'Unspecified';
+            $brand = trim((string)($product->brand ?? ''));
+            $brandName = $brand !== '' ? $brand : 'Unspecified';
             if (!isset($brands[$brandName])) {
                 $brands[$brandName] = [
                     'name' => $brandName,
@@ -62,7 +63,8 @@ class InventoryReportController extends Controller
         $grandTotal = 0;
 
         foreach ($products as $product) {
-            $brandName = $product->brand ?? 'Unspecified';
+            $brand = trim((string)($product->brand ?? ''));
+            $brandName = $brand !== '' ? $brand : 'Unspecified';
             if (!isset($brands[$brandName])) {
                 $brands[$brandName] = [
                     'name' => $brandName,
@@ -102,7 +104,8 @@ class InventoryReportController extends Controller
         $grandTotal = 0;
 
         foreach ($products as $product) {
-            $brandName = $product->brand ?? 'Unspecified';
+            $brand = trim((string)($product->brand ?? ''));
+            $brandName = $brand !== '' ? $brand : 'Unspecified';
             if (!isset($brands[$brandName])) {
                 $brands[$brandName] = [
                     'name' => $brandName,
