@@ -33,6 +33,9 @@
                         <div>
                             <div class="text-sm text-gray-500">Low Stock Items</div>
                             <div id="card-low-stock" class="text-2xl font-bold">—</div>
+                            <div id="card-low-stock-list" class="text-xs text-gray-600 mt-1 space-y-0.5" style="max-width:220px;">
+                                {{-- small preview of items will be injected here (up to 3 items) --}}
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -153,9 +156,11 @@
 
                 const low = await fetchLowStock();
                 const list = document.getElementById('lowStockList');
+                const smallPreview = document.getElementById('card-low-stock-list');
                 list.innerHTML = '';
                 if (!low || low.length === 0) {
                     list.innerHTML = '<div class="text-gray-500">No low stock items</div>';
+                    if (smallPreview) smallPreview.innerHTML = '<div class="text-gray-500">No low stock</div>';
                 } else {
                     low.forEach(p => {
                         const el = document.createElement('div');
@@ -164,6 +169,19 @@
                             <div class="text-xs text-gray-600">Supplier: ${p.supplier || ''} — On hand: ${p.ending_inventory ?? 0}</div>`;
                         list.appendChild(el);
                     });
+
+                    // Populate the small preview inside the top summary card (show up to 3 items)
+                    if (smallPreview) {
+                        smallPreview.innerHTML = '';
+                        const previewCount = Math.min(3, low.length);
+                        for (let i = 0; i < previewCount; i++) {
+                            const p = low[i];
+                            const line = document.createElement('div');
+                            line.className = 'truncate';
+                            line.textContent = `${p.part_number ? p.part_number + ' — ' : ''}${p.name || ''} (${p.ending_inventory ?? 0})`;
+                            smallPreview.appendChild(line);
+                        }
+                    }
 
                     // 🔹 Quick low stock stats (used by UI badges)
                     const lowCountEl = document.getElementById('lowStockCountBadge');
