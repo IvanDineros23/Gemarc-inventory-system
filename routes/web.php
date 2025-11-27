@@ -29,7 +29,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::delete('/receiving/{receiving}', [\App\Http\Controllers\ReceivingController::class, 'destroy'])->name('receiving.destroy');
     Route::get('/inventory-per-supplier', [\App\Http\Controllers\InventoryController::class, 'index'])->name('inventory.per.supplier');
     Route::get('/inventory-per-supplier/print', [\App\Http\Controllers\InventoryController::class, 'print'])->name('inventory.per.supplier.print');
-    Route::view('/inventory-report', 'pages.inventory-report')->name('inventory.report');
+    Route::get('/inventory-report', [\App\Http\Controllers\InventoryReportController::class, 'index'])->name('inventory.report');
+    Route::get('/inventory-report/print', [\App\Http\Controllers\InventoryReportController::class, 'print'])->name('inventory.report.print');
+    Route::get('/inventory-report/download', [\App\Http\Controllers\InventoryReportController::class, 'download'])->name('inventory.report.download');
     Route::view('/consignment-items', 'pages.consignment-items')->name('consignment.items');
     Route::view('/reorder-level-entry', 'pages.reorder-level-entry')->name('reorder.level.entry');
     Route::view('/delivery-entry', 'pages.delivery-entry')->name('delivery.entry');
