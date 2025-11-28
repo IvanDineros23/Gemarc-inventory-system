@@ -14,6 +14,16 @@ class Delivery extends Model
         'date',
         'qty',
         'remarks',
+        'dr_number',
+        'customer',
+        'dr_date',
+        'part_number',
+        'item_name',
+        'item_description',
+        'unit_cost',
+        'unit',
+        'currency',
+        'intended_to',
     ];
 
     public function product()

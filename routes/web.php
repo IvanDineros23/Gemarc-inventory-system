@@ -38,6 +38,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     // Delivery entry: show form and handle posting deliveries
     Route::get('/delivery-entry', [\App\Http\Controllers\DeliveryEntryController::class, 'index'])->name('delivery.entry');
     Route::post('/delivery', [\App\Http\Controllers\DeliveryEntryController::class, 'store'])->name('delivery.store');
+    Route::get('/delivery/print/{dr_number}', [\App\Http\Controllers\DeliveryEntryController::class, 'print'])->name('delivery.print');
     Route::get('/stock-movement', [\App\Http\Controllers\StockMovementController::class, 'index'])->name('stock.movement');
     Route::view('/delivery-review', 'pages.delivery-review')->name('delivery.review');
     Route::get('/product-management', [\App\Http\Controllers\ProductManagementController::class, 'index'])->name('product.management');
