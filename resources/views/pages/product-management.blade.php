@@ -7,7 +7,7 @@
 @endsection
 
 @section('content')
-<div class="bg-white p-2 rounded shadow max-w-full mx-auto">
+<div id="pageContent" class="bg-white p-2 rounded shadow max-w-full mx-auto">
     {{-- Product Form --}}
     @if($errors->any())
         <div class="mb-4 p-3 bg-red-50 border border-red-200 text-red-700 rounded">
@@ -24,100 +24,110 @@
             {{ session('success') }}
         </div>
     @endif
-    <form method="POST" action="{{ route('product.management.store') }}" enctype="multipart/form-data" class="space-y-4">
-        @csrf
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
-            <div>
-                <label class="block font-semibold">Part Number</label>
-                <input type="text" name="part_number" class="w-full border rounded px-3 py-2">
-            </div>
-            <div>
-                <label class="block font-semibold">Inventory ID</label>
-                <input type="text" name="inventory_id" class="w-full border rounded px-3 py-2">
-            </div>
-                <div>
-                    <label class="block font-semibold">Brand</label>
-                    <input type="text" name="brand" class="w-full border rounded px-3 py-2">
+    {{-- placeholder: Add button moved below to Product List header --}}
+
+    <!-- Add Product Modal -->
+    <div id="addModal" style="z-index:9999;" class="fixed inset-0 bg-black bg-opacity-40 hidden items-center justify-center">
+        <div class="bg-white rounded shadow-lg w-11/12 md:w-3/4 lg:w-2/3 p-6 relative max-h-[90vh] overflow-y-auto">
+            <button id="closeAddModal" class="absolute top-3 right-3 text-gray-600">✕</button>
+            <h3 class="text-lg font-semibold mb-4">Add Product</h3>
+
+            <form id="addForm" method="POST" action="{{ route('product.management.store') }}" enctype="multipart/form-data">
+                @csrf
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
+                    <div>
+                        <label class="block font-semibold">Part Number</label>
+                        <input type="text" name="part_number" id="add_part_number" class="w-full border rounded px-3 py-2">
+                    </div>
+                    <div>
+                        <label class="block font-semibold">Inventory ID</label>
+                        <input type="text" name="inventory_id" id="add_inventory_id" class="w-full border rounded px-3 py-2">
+                    </div>
+                    <div>
+                        <label class="block font-semibold">Brand</label>
+                        <input type="text" name="brand" id="add_brand" class="w-full border rounded px-3 py-2">
+                    </div>
+                    <div>
+                        <label class="block font-semibold">Name</label>
+                        <input type="text" name="name" id="add_name" class="w-full border rounded px-3 py-2" required>
+                    </div>
+                    <div class="md:col-span-2">
+                        <label class="block font-semibold">Description</label>
+                        <textarea name="description" id="add_description" class="w-full border rounded px-3 py-2"></textarea>
+                    </div>
+                    <div>
+                        <label class="block font-semibold">Supplier</label>
+                        <input type="text" name="supplier" id="add_supplier" class="w-full border rounded px-3 py-2">
+                    </div>
+                    <div>
+                        <label class="block font-semibold">F.O #</label>
+                        <input type="text" name="fo_number" id="add_fo_number" class="w-full border rounded px-3 py-2">
+                    </div>
+                    <div>
+                        <label class="block font-semibold">Date Received</label>
+                        <input type="date" name="date_received" id="add_date_received" class="w-full border rounded px-3 py-2">
+                    </div>
+                    <div>
+                        <label class="block font-semibold">Qty. Received</label>
+                        <input type="number" name="qty_received" id="add_qty_received"
+                               class="w-full border rounded px-3 py-2"
+                               oninput="calculateTotal('add')">
+                    </div>
+                    <div>
+                        <label class="block font-semibold">Unit Price</label>
+                        <input type="number" step="0.01" name="unit_price" id="add_unit_price"
+                               class="w-full border rounded px-3 py-2"
+                               oninput="calculateTotal('add')">
+                    </div>
+                    <div>
+                        <label class="block font-semibold">Beginning Inventory</label>
+                        <input type="number" name="beginning_inventory" id="add_beginning_inventory" class="w-full border rounded px-3 py-2">
+                    </div>
+                    <div>
+                        <label class="block font-semibold">Ending Inventory</label>
+                        <input type="number" name="ending_inventory" id="add_ending_inventory" class="w-full border rounded px-3 py-2">
+                    </div>
+                    <div>
+                        <label class="block font-semibold">TOTAL</label>
+                        <input type="number" step="0.01" name="total" id="add_total"
+                               class="w-full border rounded px-3 py-2">
+                    </div>
                 </div>
-            <div>
-                <label class="block font-semibold">Name</label>
-                <input type="text" name="name" class="w-full border rounded px-3 py-2" required>
-            </div>
-            <div>
-                <label class="block font-semibold">Description</label>
-                <textarea name="description" class="w-full border rounded px-3 py-2"></textarea>
-            </div>
-            <div>
-                <label class="block font-semibold">Supplier</label>
-                <input type="text" name="supplier" class="w-full border rounded px-3 py-2">
-            </div>
-            <div>
-                <label class="block font-semibold">F.O #</label>
-                <input type="text" name="fo_number" class="w-full border rounded px-3 py-2">
-            </div>
-            <div>
-                <label class="block font-semibold">Date Received</label>
-                <input type="date" name="date_received" class="w-full border rounded px-3 py-2">
-            </div>
-            <div>
-                <label class="block font-semibold">Qty. Received</label>
-                <input type="number" name="qty_received" id="qty_received"
-                       class="w-full border rounded px-3 py-2"
-                       oninput="calculateTotal()">
-            </div>
-            <div>
-                <label class="block font-semibold">Unit Price</label>
-                <input type="number" step="0.01" name="unit_price" id="unit_price"
-                       class="w-full border rounded px-3 py-2"
-                       oninput="calculateTotal()">
-            </div>
-            <div>
-                <label class="block font-semibold">Beginning Inventory</label>
-                <input type="number" name="beginning_inventory" class="w-full border rounded px-3 py-2">
-            </div>
-            <div>
-                <label class="block font-semibold">Ending Inventory</label>
-                <input type="number" name="ending_inventory" class="w-full border rounded px-3 py-2">
-            </div>
-            <div>
-                <label class="block font-semibold">TOTAL</label>
-                <input type="number" step="0.01" name="total" id="total"
-                       class="w-full border rounded px-3 py-2">
-            </div>
-        </div>
 
-        <div class="mt-4">
-            <label class="block font-semibold">Product Image (optional)</label>
-            <input type="file" name="image" class="w-full">
-            @error('image')
-                <p class="text-red-600 text-sm mt-1">{{ $message }}</p>
-            @enderror
-        </div>
+                <div class="mt-4">
+                    <label class="block font-semibold">Product Image (optional)</label>
+                    <input type="file" name="image" id="add_image" class="w-full">
+                </div>
 
-        <div class="mt-4">
-            <label class="inline-flex items-center gap-2">
-                <input type="checkbox" name="is_consignment" value="1" class="form-checkbox">
-                <span class="text-sm">Is consignment item</span>
-            </label>
-        </div>
+                <div class="mt-4">
+                    <label class="inline-flex items-center gap-2">
+                        <input type="checkbox" name="is_consignment" id="add_is_consignment" value="1" class="form-checkbox">
+                        <span class="text-sm">Is consignment item</span>
+                    </label>
+                </div>
 
-        <div class="mt-6">
-            <button type="submit"
-                    class="bg-green-600 text-white px-6 py-2 rounded hover:bg-green-700">
-                Add Product
-            </button>
+                <div class="mt-4 flex gap-3">
+                    <button type="submit" class="bg-green-600 text-white px-4 py-2 rounded">Save Product</button>
+                    <button type="button" id="cancelAdd" class="px-4 py-2 border rounded">Cancel</button>
+                </div>
+            </form>
         </div>
-    </form>
+    </div>
 
     {{-- Product List Table --}}
     <div class="mt-10">
         <h3 class="text-xl font-semibold mb-2">Product List</h3>
 
-        <div class="mb-4 flex justify-end">
-            <input type="text" id="productSearch"
-                   class="border rounded px-3 py-2 w-full max-w-xs"
-                   placeholder="Search products..."
-                   oninput="filterProducts()">
+        <div class="mb-4 flex justify-between items-center">
+            <div>
+                <button id="openAddModal" class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">Add Product</button>
+            </div>
+            <div class="ml-4 flex-1 text-right">
+                <input type="text" id="productSearch"
+                       class="border rounded px-3 py-2 w-full max-w-xs inline-block"
+                       placeholder="Search products..."
+                       oninput="filterProducts()">
+            </div>
         </div>
 
         <div class="overflow-x-auto">
@@ -277,13 +287,15 @@
 <script>
     let totalManualEdit = false;
 
-    function calculateTotal() {
+    function calculateTotal(prefix = '') {
         if (totalManualEdit) return;
+        const qtyEl = document.getElementById((prefix ? prefix + '_' : '') + 'qty_received') || { value: 0 };
+        const priceEl = document.getElementById((prefix ? prefix + '_' : '') + 'unit_price') || { value: 0 };
+        const totalEl = document.getElementById((prefix ? prefix + '_' : '') + 'total') || null;
 
-        const qty   = parseFloat(document.getElementById('qty_received').value) || 0;
-        const price = parseFloat(document.getElementById('unit_price').value) || 0;
-
-        document.getElementById('total').value = (qty * price).toFixed(2);
+        const qty = parseFloat(qtyEl.value) || 0;
+        const price = parseFloat(priceEl.value) || 0;
+        if (totalEl) totalEl.value = (qty * price).toFixed(2);
     }
 
     function filterProducts() {
@@ -313,6 +325,7 @@
 
     document.addEventListener('DOMContentLoaded', function () {
         const totalInput = document.getElementById('total');
+        const addTotalInput = document.getElementById('add_total');
 
         if (totalInput) {
             totalInput.addEventListener('focus', function () {
@@ -325,7 +338,114 @@
             });
         }
 
+        if (addTotalInput) {
+            addTotalInput.addEventListener('focus', function () { totalManualEdit = true; });
+            addTotalInput.addEventListener('blur', function () { totalManualEdit = false; calculateTotal('add'); });
+        }
+
         calculateTotal();
+        calculateTotal('add');
+
+        // Add modal open/close handlers
+        const openAdd = document.getElementById('openAddModal');
+        const addModal = document.getElementById('addModal');
+        const closeAdd = document.getElementById('closeAddModal');
+        const cancelAdd = document.getElementById('cancelAdd');
+
+        // helper to find focusable elements
+        function getFocusableElements(container){
+            return Array.from(container.querySelectorAll('a[href], button:not([disabled]), textarea, input, select, [tabindex]:not([tabindex="-1"])'))
+                .filter(el => el.offsetParent !== null);
+        }
+
+        let _lastActiveElAdd = null;
+        let _addOutsideHandler = null;
+        function showAddModal(){
+            _lastActiveElAdd = document.activeElement;
+            document.body.style.overflow = 'hidden';
+            // disable background interactions
+            const page = document.getElementById('pageContent');
+            if (page) { page.style.pointerEvents = 'none'; page.setAttribute('aria-hidden','true'); }
+            addModal.classList.remove('hidden');
+            addModal.classList.add('flex');
+            // focus first focusable
+            const dialog = addModal.querySelector('.bg-white');
+            const focusables = getFocusableElements(dialog);
+            if (focusables.length) focusables[0].focus();
+
+            // attach document-level mousedown handler to reliably catch outside clicks
+            _addOutsideHandler = function(ev){
+                try{
+                    if (!dialog.contains(ev.target)) {
+                        hideAddModal();
+                    }
+                }catch(e){}
+            };
+            document.addEventListener('mousedown', _addOutsideHandler);
+        }
+
+        function hideAddModal(){
+            addModal.classList.remove('flex');
+            addModal.classList.add('hidden');
+            const page = document.getElementById('pageContent');
+            if (page) { page.style.pointerEvents = ''; page.removeAttribute('aria-hidden'); }
+            document.body.style.overflow = '';
+            try{ if (_lastActiveElAdd && typeof _lastActiveElAdd.focus === 'function') _lastActiveElAdd.focus(); }catch(e){}
+            if (_addOutsideHandler) { document.removeEventListener('mousedown', _addOutsideHandler); _addOutsideHandler = null; }
+        }
+
+        // expose to global so other handlers (global ESC) can use the same cleanup
+        window.hideAddModal = hideAddModal;
+        window.showAddModal = showAddModal;
+
+        if (openAdd && addModal) {
+            openAdd.addEventListener('click', () => showAddModal());
+        }
+
+        if (closeAdd) closeAdd.addEventListener('click', hideAddModal);
+        if (cancelAdd) cancelAdd.addEventListener('click', hideAddModal);
+
+        // Close add modal when clicking outside (backdrop)
+        if (addModal) {
+            addModal.addEventListener('click', function (e) {
+                const dialog = addModal.querySelector('.bg-white');
+                // if click happened outside the dialog element, close
+                if (dialog && !dialog.contains(e.target)) {
+                    hideAddModal();
+                }
+            });
+            // prevent clicks inside dialog from bubbling to overlay
+            const dialogEl = addModal.querySelector('.bg-white');
+            if (dialogEl) {
+                dialogEl.addEventListener('click', function(ev){ ev.stopPropagation(); });
+            }
+        }
+
+        // Keyboard handling (Escape to close, Tab to trap focus inside addModal)
+        document.addEventListener('keydown', (ev) => {
+            if (addModal.classList.contains('hidden')) return;
+            if (ev.key === 'Escape' || ev.key === 'Esc') { hideAddModal(); return; }
+            if (ev.key === 'Tab'){
+                const dialog = addModal.querySelector('.bg-white');
+                const focusables = getFocusableElements(dialog);
+                if (!focusables.length) return;
+                const first = focusables[0];
+                const last = focusables[focusables.length - 1];
+                if (ev.shiftKey){
+                    if (document.activeElement === first){ ev.preventDefault(); last.focus(); }
+                } else {
+                    if (document.activeElement === last){ ev.preventDefault(); first.focus(); }
+                }
+            }
+        });
+
+        // Preview image on select in add modal
+        const addImageInput = document.getElementById('add_image');
+        if (addImageInput) {
+            addImageInput.addEventListener('change', function () {
+                // preview not required for now; could add preview area similar to edit modal
+            });
+        }
     });
 
     // Edit modal logic
@@ -398,11 +518,21 @@
     // Close on ESC key
     document.addEventListener('keydown', function (e) {
         if (e.key === 'Escape') {
-            if (!editModal.classList.contains('hidden')) closeEditModal();
+            // if add modal open, use centralized hide helper
+            const addModalEl = document.getElementById('addModal');
+            if (addModalEl && !addModalEl.classList.contains('hidden')) {
+                if (typeof window.hideAddModal === 'function') { window.hideAddModal(); return; }
+            }
+
+            if (!editModal.classList.contains('hidden')) {
+                closeEditModal();
+                return;
+            }
+
             const deleteModalEl = document.getElementById('deleteModal');
             if (deleteModalEl && !deleteModalEl.classList.contains('hidden')) {
-                deleteModalEl.classList.remove('flex');
-                deleteModalEl.classList.add('hidden');
+                // use hideDeleteModal to ensure cleanup (restore scrolling/pointer events)
+                if (typeof hideDeleteModal === 'function') hideDeleteModal();
             }
         }
     });
@@ -563,6 +693,19 @@
     const cancelDeleteBtn = document.getElementById('cancelDelete');
     let deleteTargetId = null;
 
+    function hideDeleteModal(){
+        deleteTargetId = null;
+        if (deleteModal) {
+            deleteModal.classList.remove('flex');
+            deleteModal.classList.add('hidden');
+        }
+        // restore body scrolling
+        document.body.style.overflow = '';
+        // ensure page content is interactive again
+        const page = document.getElementById('pageContent');
+        if (page) { page.style.pointerEvents = ''; page.removeAttribute('aria-hidden'); }
+    }
+
     document.querySelectorAll('.delete-btn').forEach(btn => {
         btn.addEventListener('click', (e) => {
             deleteTargetId = btn.getAttribute('data-id');
@@ -576,9 +719,7 @@
     if (cancelDeleteBtn) {
         cancelDeleteBtn.addEventListener('click', () => {
             deleteTargetId = null;
-            deleteModal.classList.remove('flex');
-            deleteModal.classList.add('hidden');
-            document.body.style.overflow = '';
+            hideDeleteModal();
         });
     }
 
@@ -586,9 +727,7 @@
     if (deleteModal) {
         deleteModal.addEventListener('click', function (e) {
             if (e.target === deleteModal) {
-                deleteTargetId = null;
-                deleteModal.classList.remove('flex');
-                deleteModal.classList.add('hidden');
+                hideDeleteModal();
             }
         });
     }
@@ -628,10 +767,7 @@
                 }
 
                 showMessage('Product deleted');
-                deleteTargetId = null;
-                deleteModal.classList.remove('flex');
-                deleteModal.classList.add('hidden');
-                document.body.style.overflow = '';
+                hideDeleteModal();
             }).catch(err => {
                 console.error('Delete fetch error', err);
                 showMessage('Delete failed', 'error');
