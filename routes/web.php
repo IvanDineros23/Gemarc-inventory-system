@@ -39,8 +39,13 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/delivery-entry', [\App\Http\Controllers\DeliveryEntryController::class, 'index'])->name('delivery.entry');
     Route::post('/delivery', [\App\Http\Controllers\DeliveryEntryController::class, 'store'])->name('delivery.store');
     Route::get('/delivery/print/{dr_number}', [\App\Http\Controllers\DeliveryEntryController::class, 'print'])->name('delivery.print');
+    Route::get('/delivery/print/sample/{id}', [\App\Http\Controllers\DeliveryEntryController::class, 'printBySampleId'])->name('delivery.print.sample');
+    Route::get('/delivery/print/pdf/{identifier}', [\App\Http\Controllers\DeliveryEntryController::class, 'printPdf'])->name('delivery.print.pdf');
     Route::get('/stock-movement', [\App\Http\Controllers\StockMovementController::class, 'index'])->name('stock.movement');
-    Route::view('/delivery-review', 'pages.delivery-review')->name('delivery.review');
+    Route::get('/delivery-review', [\App\Http\Controllers\DeliveryReviewController::class, 'index'])->name('delivery.review');
+    Route::get('/delivery-review/id/{id}', [\App\Http\Controllers\DeliveryReviewController::class, 'detailsBySampleId'])->name('delivery.review.details.id');
+    Route::get('/delivery-review/{dr_number}', [\App\Http\Controllers\DeliveryReviewController::class, 'details'])->name('delivery.review.details');
+    Route::post('/delivery-review/{dr_number}/approve', [\App\Http\Controllers\DeliveryReviewController::class, 'approve'])->name('delivery.review.approve');
     Route::get('/product-management', [\App\Http\Controllers\ProductManagementController::class, 'index'])->name('product.management');
     Route::post('/product-management', [\App\Http\Controllers\ProductManagementController::class, 'store'])->name('product.management.store');
     // Dashboard

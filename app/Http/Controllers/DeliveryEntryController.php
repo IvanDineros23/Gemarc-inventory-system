@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\Product;
 use App\Models\Delivery;
+use Barryvdh\DomPDF\Facade\Pdf as PDF;
 
 class DeliveryEntryController extends Controller
 {
@@ -101,5 +102,100 @@ class DeliveryEntryController extends Controller
         }
 
         return view('pages.delivery-printable', ['rows' => $rows, 'dr_number' => $drNumber]);
+    }
+
+    public function printBySampleId($id)
+    {
+        $sample = Delivery::find($id);
+        if (!$sample) {
+            return redirect()->route('delivery.entry')->withErrors(['notfound' => 'Sample DR not found for printing.']);
+        }
+
+        if ($sample->dr_number) {
+            return $this->print($sample->dr_number);
+        }
+
+        // get group that matches customer and date (same logic as detailsBySampleId)
+        $query = Delivery::whereNull('dr_number')
+            ->where(function($q) use ($sample) {
+                if ($sample->customer) {
+                    $q->where('customer', $sample->customer);
+                }
+                if ($sample->dr_date) {
+                    $q->whereDate('dr_date', $sample->dr_date);
+                } else {
+                    $q->whereDate('date', $sample->date);
+                }
+            });
+
+        $rows = $query->orderBy('id')->get();
+        if ($rows->isEmpty()) {
+            return redirect()->route('delivery.entry')->withErrors(['notfound' => 'No deliveries found for printing.']);
+        }
+
+        // Use a generated dr_number label like 'DR:sample-{id}' for printable header
+        $label = 'sample-' . $id;
+        return view('pages.delivery-printable', ['rows' => $rows, 'dr_number' => $label]);
+    }
+
+    public function printPdf($identifier)
+    {
+        // identifier may be a dr_number or sample-<id>
+        if (str_starts_with($identifier, 'sample-')) {
+            $id = intval(substr($identifier, strlen('sample-')));
+            $sample = Delivery::find($id);
+            if (!$sample) {
+                return redirect()->route('delivery.entry')->withErrors(['notfound' => 'Sample not found for PDF.']);
+            }
+
+            if ($sample->dr_number) {
+                $rows = Delivery::where('dr_number', $sample->dr_number)->orderBy('id')->get();
+                $label = $sample->dr_number;
+            } else {
+                $query = Delivery::whereNull('dr_number')->where(function($q) use ($sample) {
+                    if ($sample->customer) { $q->where('customer', $sample->customer); }
+                    if ($sample->dr_date) { $q->whereDate('dr_date', $sample->dr_date); } else { $q->whereDate('date', $sample->date); }
+                });
+                $rows = $query->orderBy('id')->get();
+                $label = 'sample-' . $id;
+            }
+        } else {
+            $rows = Delivery::where('dr_number', $identifier)->orderBy('id')->get();
+            $label = $identifier;
+        }
+
+        if ($rows->isEmpty()) {
+            return redirect()->route('delivery.entry')->withErrors(['notfound' => 'No deliveries found for PDF.']);
+        }
+
+        $pdf = PDF::loadView('pages.delivery-printable', ['rows' => $rows, 'dr_number' => $label]);
+
+        // Build filename: DR_{drNumber}_{customer}_{date}.pdf
+        $firstRow = $rows->first();
+        $customer = $firstRow->customer ?? '';
+        // determine date to use: prefer dr_date then date then now
+        $dateUsed = null;
+        if (!empty($firstRow->dr_date)) {
+            $dateUsed = \Carbon\Carbon::parse($firstRow->dr_date)->format('Ymd');
+        } elseif (!empty($firstRow->date)) {
+            $dateUsed = \Carbon\Carbon::parse($firstRow->date)->format('Ymd');
+        } else {
+            $dateUsed = now()->format('Ymd');
+        }
+
+        // sanitize parts for filename
+        $sanitize = function($s) {
+            $s = (string)$s;
+            $s = trim($s);
+            $s = str_replace(' ', '_', $s);
+            // remove any character that's not letter, number, underscore or dash
+            return preg_replace('/[^A-Za-z0-9_\-]/', '', $s);
+        };
+
+        $safeLabel = $sanitize($label);
+        $safeCustomer = $sanitize($customer ?: 'customer');
+
+        $filename = sprintf('DR_%s_%s_%s.pdf', $safeLabel, $safeCustomer, $dateUsed);
+        return $pdf->download($filename);
     }
 }

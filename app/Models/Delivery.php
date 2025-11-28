@@ -24,6 +24,9 @@ class Delivery extends Model
         'unit',
         'currency',
         'intended_to',
+        'is_approved',
+        'approved_by',
+        'approved_at',
     ];
 
     public function product()
