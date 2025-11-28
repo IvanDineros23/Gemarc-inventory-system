@@ -37,7 +37,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/reorder-level-entry', [\App\Http\Controllers\ReorderController::class, 'index'])->name('reorder.level.entry');
     // Delivery entry remains a simple placeholder page
     Route::view('/delivery-entry', 'pages.delivery-entry')->name('delivery.entry');
-    Route::view('/stock-movement', 'pages.stock-movement')->name('stock.movement');
+    Route::get('/stock-movement', [\App\Http\Controllers\StockMovementController::class, 'index'])->name('stock.movement');
     Route::view('/delivery-review', 'pages.delivery-review')->name('delivery.review');
     Route::get('/product-management', [\App\Http\Controllers\ProductManagementController::class, 'index'])->name('product.management');
     Route::post('/product-management', [\App\Http\Controllers\ProductManagementController::class, 'store'])->name('product.management.store');

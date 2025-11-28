@@ -86,16 +86,11 @@
                     @endisset
 
                     <main class="p-6">
-                        {{-- Support both component slot usage (<x-app-layout>) and traditional @section('content') --}}
-                        @isset($slot)
-                            {{ $slot }}
-                        @endisset
-
                         @yield('content')
                     </main>
                 </div>
             </div>
-
+        
             @if(session('success'))
                 <div class="fixed top-4 right-4 bg-green-500 text-white px-4 py-2 rounded shadow">
                     {{ session('success') }}
