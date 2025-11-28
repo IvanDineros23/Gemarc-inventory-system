@@ -86,6 +86,11 @@
                     @endisset
 
                     <main class="p-6">
+                        {{-- Support both component slot usage (<x-app-layout>) and traditional @section('content') --}}
+                        @isset($slot)
+                            {{ $slot }}
+                        @endisset
+
                         @yield('content')
                     </main>
                 </div>
