@@ -35,8 +35,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/consignment-items', [\App\Http\Controllers\ConsignmentController::class, 'index'])->name('consignment.items');
     // Re-order level entry should display low-stock notifications (fast-moving highlights)
     Route::get('/reorder-level-entry', [\App\Http\Controllers\ReorderController::class, 'index'])->name('reorder.level.entry');
-    // Delivery entry remains a simple placeholder page
-    Route::view('/delivery-entry', 'pages.delivery-entry')->name('delivery.entry');
+    // Delivery entry: show form and handle posting deliveries
+    Route::get('/delivery-entry', [\App\Http\Controllers\DeliveryEntryController::class, 'index'])->name('delivery.entry');
+    Route::post('/delivery', [\App\Http\Controllers\DeliveryEntryController::class, 'store'])->name('delivery.store');
     Route::get('/stock-movement', [\App\Http\Controllers\StockMovementController::class, 'index'])->name('stock.movement');
     Route::view('/delivery-review', 'pages.delivery-review')->name('delivery.review');
     Route::get('/product-management', [\App\Http\Controllers\ProductManagementController::class, 'index'])->name('product.management');

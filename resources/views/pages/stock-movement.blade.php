@@ -31,7 +31,7 @@
 
                     @if($monthly->isEmpty())
                         <div class="p-4 bg-yellow-50 border-l-4 border-yellow-400">
-                            <p class="text-sm text-yellow-800">No records found. If you expect delivered (sales) data, add a `deliveries` table with `product_id`, `date`, and `qty` columns. Showing `receivings` is used only as an example when available.</p>
+                            <p class="text-sm text-yellow-800">No records found. This page prefers a `deliveries` (outgoing) table with `product_id`, `date`, and `qty` columns. The app will fall back to the `receivings` table if present — when using `receivings`, the controller uses `date_received` if available, otherwise falls back to `created_at` for grouping.</p>
                         </div>
                     @else
                         <div class="overflow-x-auto">

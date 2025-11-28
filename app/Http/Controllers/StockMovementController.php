@@ -29,16 +29,18 @@ class StockMovementController extends Controller
         } else {
             // Fallback: if there's no deliveries table, attempt to use receivings as example data
             if (Schema::hasTable('receivings')) {
+                // Use date_received when available; fallback to created_at when date_received is NULL
+                $dateExpression = "COALESCE(receivings.date_received, receivings.created_at)";
+
                 $monthly = DB::table('receivings')
                     ->leftJoin('products', 'receivings.product_id', '=', 'products.id')
-                    ->selectRaw('products.id as product_id, products.name as product_name, YEAR(receivings.date_received) as year, MONTH(receivings.date_received) as month, SUM(receivings.qty_received) as total')
-                    ->whereNotNull('receivings.date_received')
-                    ->groupBy('products.id', 'products.name', DB::raw('YEAR(receivings.date_received)'), DB::raw('MONTH(receivings.date_received)'))
+                    ->selectRaw("products.id as product_id, products.name as product_name, YEAR({$dateExpression}) as year, MONTH({$dateExpression}) as month, SUM(receivings.qty_received) as total")
+                    ->groupBy('products.id', 'products.name', DB::raw("YEAR({$dateExpression})"), DB::raw("MONTH({$dateExpression})"))
                     ->orderBy('year', 'desc')
                     ->orderBy('month', 'desc')
                     ->get();
 
-                $source = 'receivings (example)';
+                $source = 'receivings (using date_received or created_at fallback)';
             } else {
                 $monthly = collect();
                 $source = null;
