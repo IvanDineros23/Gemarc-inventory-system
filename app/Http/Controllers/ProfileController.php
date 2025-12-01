@@ -26,6 +26,11 @@ class ProfileController extends Controller
      */
     public function update(ProfileUpdateRequest $request): RedirectResponse
     {
+        // require the user's current password to confirm profile changes
+        $request->validate([
+            'current_password' => ['required', 'current_password'],
+        ]);
+
         $request->user()->fill($request->validated());
 
         if ($request->user()->isDirty('email')) {
