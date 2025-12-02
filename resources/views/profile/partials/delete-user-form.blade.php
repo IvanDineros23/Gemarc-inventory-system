@@ -16,8 +16,8 @@
         @method('delete')
 
         <div class="mb-3">
-            <label for="password" class="block text-sm font-medium text-gray-700">{{ __('Password') }}</label>
-            <input id="password" name="password" type="password" required class="mt-1 block w-full border rounded px-3 py-2">
+            <label for="delete_password" class="block text-sm font-medium text-gray-700">{{ __('Password') }}</label>
+            <input id="delete_password" name="password" type="password" required class="mt-1 block w-full border rounded px-3 py-2">
             @error('password', 'userDeletion') <p class="text-sm text-red-600">{{ $message }}</p> @enderror
         </div>
 

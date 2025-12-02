@@ -67,6 +67,10 @@ Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+
+    // Database backup & restore (accessible from settings page)
+    Route::post('/admin/db/backup', [\App\Http\Controllers\DatabaseController::class, 'backup'])->name('db.backup');
+    Route::post('/admin/db/restore', [\App\Http\Controllers\DatabaseController::class, 'restore'])->name('db.restore');
 });
 
 require __DIR__.'/auth.php';
