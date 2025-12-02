@@ -110,9 +110,6 @@
         </div>
     </div>
 
-    {{-- Chart.js CDN --}}
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
     <script>
         let receivingsChartObj = null;
         let stockValueChartObj = null;
