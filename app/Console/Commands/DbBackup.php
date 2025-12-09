@@ -55,7 +55,8 @@ class DbBackup extends Command
         $dump .= "-- Generated: " . date('Y-m-d H:i:s') . "\n";
         $dump .= "-- Database: {$database}\n\n";
         $dump .= "SET SQL_MODE = \"NO_AUTO_VALUE_ON_ZERO\";\n";
-        $dump .= "SET time_zone = \"+00:00\";\n\n";
+        $dump .= "SET time_zone = \"+00:00\";\n";
+        $dump .= "SET FOREIGN_KEY_CHECKS=0;\n\n";
         $dump .= "/*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;\n";
         $dump .= "/*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;\n";
         $dump .= "/*!40101 SET @OLD_COLLATION_CONNECTION=@@COLLATION_CONNECTION */;\n";
@@ -81,28 +82,37 @@ class DbBackup extends Command
             
             if ($rows->count() > 0) {
                 $dump .= "--\n-- Dumping data for table `{$tableName}`\n--\n\n";
+                $dump .= "LOCK TABLES `{$tableName}` WRITE;\n";
                 
-                foreach ($rows as $row) {
-                    $values = [];
-                    foreach ((array) $row as $value) {
-                        if (is_null($value)) {
-                            $values[] = 'NULL';
-                        } else {
-                            $values[] = "'" . addslashes($value) . "'";
+                // Build batch inserts for better performance
+                $batchSize = 100;
+                $batches = array_chunk($rows->toArray(), $batchSize);
+                
+                foreach ($batches as $batch) {
+                    foreach ($batch as $row) {
+                        $values = [];
+                        foreach ((array) $row as $value) {
+                            if (is_null($value)) {
+                                $values[] = 'NULL';
+                            } else {
+                                $values[] = "'" . addslashes($value) . "'";
+                            }
                         }
+                        
+                        $columns = array_keys((array) $row);
+                        $columnsList = '`' . implode('`, `', $columns) . '`';
+                        $valuesList = implode(', ', $values);
+                        
+                        $dump .= "INSERT INTO `{$tableName}` ({$columnsList}) VALUES ({$valuesList});\n";
                     }
-                    
-                    $columns = array_keys((array) $row);
-                    $columnsList = '`' . implode('`, `', $columns) . '`';
-                    $valuesList = implode(', ', $values);
-                    
-                    $dump .= "INSERT INTO `{$tableName}` ({$columnsList}) VALUES ({$valuesList});\n";
                 }
                 
+                $dump .= "UNLOCK TABLES;\n";
                 $dump .= "\n";
             }
         }
 
+        $dump .= "SET FOREIGN_KEY_CHECKS=1;\n";
         $dump .= "/*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;\n";
         $dump .= "/*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;\n";
         $dump .= "/*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;\n";

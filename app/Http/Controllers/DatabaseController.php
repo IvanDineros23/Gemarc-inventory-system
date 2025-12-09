@@ -81,6 +81,11 @@ class DatabaseController extends Controller
                 return redirect()->back()->with('error', 'Failed to store uploaded file.');
             }
 
+            // Clear any existing cache
+            Artisan::call('cache:clear');
+            Artisan::call('config:clear');
+            Artisan::call('view:clear');
+            
             // Run restore
             $exit = Artisan::call('db:restore', ['file' => $fullPath]);
             $output = Artisan::output();
@@ -91,13 +96,32 @@ class DatabaseController extends Controller
             }
 
             if ($exit !== 0) {
-                return redirect()->back()->with('error', 'Restore failed: ' . $output);
+                Log::error('Restore failed with exit code ' . $exit . ': ' . $output);
+                return redirect()->back()->with('error', 'Restore failed. Check logs for details.');
+            }
+
+            // Clear cache again after restore to ensure fresh data
+            Artisan::call('cache:clear');
+
+            // If the request expects JSON (AJAX), return JSON response so the frontend can show toast
+            if ($request->expectsJson()) {
+                return response()->json([
+                    'status' => 'success',
+                    'message' => 'Database restored successfully.'
+                ]);
             }
 
             return redirect()->back()->with('success', 'Database restored successfully.');
             
         } catch (\Exception $e) {
             Log::error('Restore failed: ' . $e->getMessage());
+            if ($request->expectsJson()) {
+                return response()->json([
+                    'status' => 'error',
+                    'message' => 'Restore failed: ' . $e->getMessage()
+                ], 500);
+            }
+
             return redirect()->back()->with('error', 'Restore failed: ' . $e->getMessage());
         }
     }

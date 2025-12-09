@@ -34,37 +34,40 @@ class DbRestore extends Command
 
             // Disable foreign key checks during restore
             DB::statement('SET FOREIGN_KEY_CHECKS=0');
+            DB::statement('SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO"');
+            DB::statement('SET time_zone = "+00:00"');
             
-            // Split the SQL into individual statements
-            // This is a simple split - for production you might want a more robust parser
-            $statements = array_filter(
-                array_map('trim', preg_split('/;[\r\n]+/', $sql)),
-                function($stmt) {
-                    return !empty($stmt) && !preg_match('/^--/', $stmt) && !preg_match('/^\/\*!/', $stmt);
-                }
-            );
+            // Parse SQL statements properly
+            $statements = $this->parseSqlFile($sql);
 
             $this->info('Executing ' . count($statements) . ' SQL statements...');
             
             $executed = 0;
+            $errors = 0;
+            
             foreach ($statements as $statement) {
-                if (empty($statement) || substr($statement, 0, 2) === '--') {
+                if (empty($statement)) {
                     continue;
                 }
                 
                 try {
                     DB::unprepared($statement);
                     $executed++;
+                    
+                    // Show progress for every 10 statements
+                    if ($executed % 10 === 0) {
+                        $this->info("Executed {$executed} statements...");
+                    }
                 } catch (\Exception $e) {
-                    // Log but continue with other statements
-                    Log::warning('SQL statement failed: ' . $e->getMessage());
+                    $errors++;
+                    Log::warning('SQL statement failed: ' . substr($statement, 0, 100) . '... Error: ' . $e->getMessage());
                 }
             }
 
             // Re-enable foreign key checks
             DB::statement('SET FOREIGN_KEY_CHECKS=1');
 
-            $this->info("Restore completed successfully. Executed {$executed} statements.");
+            $this->info("Restore completed. Executed {$executed} statements successfully, {$errors} failed.");
             return 0;
             
         } catch (\Exception $e) {
@@ -77,5 +80,65 @@ class DbRestore extends Command
             $this->error('Restore failed: ' . $e->getMessage());
             return 1;
         }
+    }
+
+    /**
+     * Parse SQL file into individual statements
+     * Handles multi-line statements, comments, and MySQL-specific syntax
+     */
+    protected function parseSqlFile(string $sql): array
+    {
+        $statements = [];
+        $currentStatement = '';
+        $lines = explode("\n", $sql);
+        
+        foreach ($lines as $line) {
+            $line = trim($line);
+            
+            // Skip empty lines
+            if (empty($line)) {
+                continue;
+            }
+            
+            // Skip single-line comments
+            if (substr($line, 0, 2) === '--' || substr($line, 0, 1) === '#') {
+                continue;
+            }
+            
+            // Handle MySQL-specific comments like /*!40101 ... */
+            if (preg_match('/^\/\*!(\d+)?\s*(.*?)\s*\*\/;?$/', $line, $matches)) {
+                // Execute the content inside these special comments
+                if (!empty($matches[2])) {
+                    $statements[] = trim($matches[2]);
+                }
+                continue;
+            }
+            
+            // Skip regular multi-line comments
+            if (substr($line, 0, 2) === '/*' && strpos($line, '*/') === false) {
+                continue;
+            }
+            
+            // Add line to current statement
+            $currentStatement .= $line . ' ';
+            
+            // Check if statement is complete (ends with semicolon)
+            if (substr(rtrim($line), -1) === ';') {
+                $currentStatement = trim($currentStatement);
+                
+                if (!empty($currentStatement)) {
+                    $statements[] = $currentStatement;
+                }
+                
+                $currentStatement = '';
+            }
+        }
+        
+        // Add any remaining statement
+        if (!empty(trim($currentStatement))) {
+            $statements[] = trim($currentStatement);
+        }
+        
+        return array_filter($statements);
     }
 }

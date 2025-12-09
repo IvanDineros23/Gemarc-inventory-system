@@ -92,15 +92,35 @@
             </div>
         
             @if(session('success'))
-                <div class="fixed top-4 right-4 bg-green-500 text-white px-4 py-2 rounded shadow">
+                <div class="toast-notification fixed top-4 right-4 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg z-50" id="success-toast">
                     {{ session('success') }}
                 </div>
+                <script>
+                    setTimeout(() => {
+                        const toast = document.getElementById('success-toast');
+                        if (toast) {
+                            toast.style.opacity = '0';
+                            toast.style.transition = 'opacity 300ms';
+                            setTimeout(() => toast.remove(), 300);
+                        }
+                    }, 3000);
+                </script>
             @endif
 
             @if(session('error'))
-                <div class="fixed top-4 right-4 bg-red-600 text-white px-4 py-2 rounded shadow">
+                <div class="toast-notification fixed top-4 right-4 bg-red-600 text-white px-6 py-3 rounded-lg shadow-lg z-50" id="error-toast">
                     {{ session('error') }}
                 </div>
+                <script>
+                    setTimeout(() => {
+                        const toast = document.getElementById('error-toast');
+                        if (toast) {
+                            toast.style.opacity = '0';
+                            toast.style.transition = 'opacity 300ms';
+                            setTimeout(() => toast.remove(), 300);
+                        }
+                    }, 3000);
+                </script>
             @endif
         </div>
     </body>
