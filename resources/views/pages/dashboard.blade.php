@@ -45,7 +45,7 @@
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
                 <div class="lg:col-span-2 bg-white p-4 rounded shadow relative">
                     <div class="absolute top-4 right-4 flex items-center gap-2">
-                        <a href="{{ route('dashboard.export.lowstock') }}" class="inline-block bg-gray-200 text-gray-700 px-3 py-2 rounded hover:bg-gray-300">Export Low Stock</a>
+                        <a href="{{ route('dashboard.export.lowstock', ['format' => 'pdf']) }}" target="_blank" class="inline-block bg-white border text-gray-700 px-3 py-2 rounded hover:bg-gray-50">Print Low Stock Items (PDF)</a>
                         <button id="refreshDashboard" class="inline-block bg-blue-600 text-white px-3 py-2 rounded hover:bg-blue-700">Refresh</button>
                     </div>
 

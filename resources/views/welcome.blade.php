@@ -13,7 +13,7 @@
             <div class="mb-6 px-2">
                 <h1 class="text-lg font-semibold leading-tight text-black">LAN Based Inventory System</h1>
                 <br>
-                <p class="text-sm text-black mt-4">Manage products, stocks, and transactions in one centralized system.</p>
+                <p class="text-sm text-black mt-4">Manage products, stocks, and transactions.</p>
             </div>
 
             <!-- Buttons -->

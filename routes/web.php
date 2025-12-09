@@ -55,7 +55,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/api/dashboard/receivings', [\App\Http\Controllers\DashboardController::class, 'receivingsSeries'])->name('api.dashboard.receivings');
     Route::get('/api/dashboard/top-suppliers', [\App\Http\Controllers\DashboardController::class, 'topSuppliers'])->name('api.dashboard.topsuppliers');
     Route::get('/api/dashboard/stock-value', [\App\Http\Controllers\DashboardController::class, 'stockValueTrend'])->name('api.dashboard.stockvalue');
-    Route::get('/dashboard/export-low-stock', [\App\Http\Controllers\DashboardController::class, 'exportLowStock'])->name('dashboard.export.lowstock');
+    Route::get('/dashboard/export-low-stock', [\App\Http\Controllers\InventoryExportController::class, 'exportLowStock'])->name('dashboard.export.lowstock');
     // Live product search for AJAX live-search on pages like Receiving Entry
     Route::get('/product-search', [\App\Http\Controllers\ProductManagementController::class, 'search'])->name('product.search');
     Route::get('/product-management/{product}/edit', [\App\Http\Controllers\ProductManagementController::class, 'edit'])->name('product.management.edit');
