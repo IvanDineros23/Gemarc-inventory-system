@@ -155,7 +155,10 @@
 
                             addBtn.addEventListener('click', () => {
                                 const pid = productSelect.value;
-                                if (!pid) return alert('Please choose a product.');
+                                if (!pid) {
+                                    showToast('Please choose a product', 'warning');
+                                    return;
+                                }
                                 const pname = productSelect.options[productSelect.selectedIndex].text;
                                 const part = productSelect.options[productSelect.selectedIndex].dataset.part || '';
                                 const qty = parseInt(qtyInput.value) || 1;

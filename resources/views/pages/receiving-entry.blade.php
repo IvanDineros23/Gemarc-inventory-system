@@ -657,9 +657,10 @@
 
                         if (!resp.ok) {
                             const data = await resp.json().catch(()=>null);
-                            alert('Failed to save item' + (data && data.message ? ': '+data.message : ''));
+                            showToast('Failed to save item' + (data && data.message ? ': '+data.message : ''), 'error');
                             return;
                         }
+                        showToast('Product added successfully', 'success');
 
                         const product = await resp.json();
                         // close modal
@@ -707,7 +708,7 @@
 
                     } catch (err) {
                         console.error('Add item failed', err);
-                        alert('Failed to save item');
+                        showToast('Failed to save item', 'error');
                     }
                 });
             }
@@ -803,9 +804,10 @@
                                 headers: { 'X-Requested-With': 'XMLHttpRequest', 'Accept':'application/json' }
                             });
                             if (!resp.ok) {
-                                alert('Failed to delete');
+                                showToast('Failed to delete receiving', 'error');
                                 return;
                             }
+                            showToast('Receiving deleted successfully', 'success');
                             // remove row from DOM
                             const tr = document.querySelector('[data-receiving-id="'+id+'"]');
                             if (tr) tr.remove();
@@ -823,7 +825,7 @@
 
                         } catch (err) {
                             console.error('Delete failed', err);
-                            alert('Failed to delete');
+                            showToast('Failed to delete receiving', 'error');
                         }
                     });
                     btn._hasDeleteHandler = true;
@@ -851,9 +853,10 @@
                                 headers: headers
                             });
                             if (!resp.ok) {
-                                alert('Failed to delete product');
+                                showToast('Failed to delete product', 'error');
                                 return;
                             }
+                            showToast('Product deleted successfully', 'success');
                             // remove product row from top list
                             const tr = document.querySelector('[data-product-id="'+id+'"]');
                             if (tr) tr.remove();
@@ -874,7 +877,7 @@
 
                         } catch (err) {
                             console.error('Product delete failed', err);
-                            alert('Failed to delete product');
+                            showToast('Failed to delete product', 'error');
                         }
                     });
                     btn._hasProductDeleteHandler = true;
@@ -888,7 +891,10 @@
                 editForm.addEventListener('submit', async (e) => {
                     e.preventDefault();
                     const id = document.getElementById('edit_receiving_id').value;
-                    if (!id) return alert('Invalid receiving id');
+                    if (!id) {
+                        showToast('Invalid receiving id', 'error');
+                        return;
+                    }
                     const fd = new FormData(editForm);
                     fd.append('_method', 'PUT');
                     try {
@@ -900,13 +906,14 @@
 
                         if (!resp.ok) {
                             const data = await resp.json().catch(()=>null);
-                            const msg = data && data.errors ? Object.values(data.errors).flat().join('\n') : 'Failed to update receiving';
-                            alert(msg);
+                            const msg = data && data.errors ? Object.values(data.errors).flat().join(', ') : 'Failed to update receiving';
+                            showToast(msg, 'error');
                             return;
                         }
 
                         const updated = await resp.json().catch(()=>null);
                         closeModal(editModal);
+                        showToast('Receiving updated successfully', 'success');
 
                         // update row in Received Items table
                         try {
@@ -940,7 +947,7 @@
 
                     } catch (err) {
                         console.error('Edit submit failed', err);
-                        alert('Failed to update receiving');
+                        showToast('Failed to update receiving', 'error');
                     }
                 });
             }
@@ -961,8 +968,8 @@
 
                         if (!resp.ok) {
                             const data = await resp.json().catch(()=>null);
-                            const msg = data && data.errors ? Object.values(data.errors).flat().join('\n') : 'Failed to save receiving';
-                            alert(msg);
+                            const msg = data && data.errors ? Object.values(data.errors).flat().join(', ') : 'Failed to save receiving';
+                            showToast(msg, 'error');
                             return;
                         }
 
@@ -971,6 +978,7 @@
 
                         // success: close modal
                         closeModal(receiveModal);
+                        showToast('Receiving saved successfully', 'success');
 
                         // prepend to Received Items table if present
                         try {
@@ -1031,7 +1039,7 @@
 
                     } catch (err) {
                         console.error('Receive submit failed', err);
-                        alert('Failed to save receiving');
+                        showToast('Failed to save receiving', 'error');
                     }
                 });
             }

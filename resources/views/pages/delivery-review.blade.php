@@ -215,12 +215,13 @@
                     body: JSON.stringify({ approved })
                 });
                 if (!res.ok) {
-                    alert('Failed to update approval');
+                    showToast('Failed to update approval', 'error');
                     return;
                 }
                 const json = await res.json();
+                showToast('Delivery approval updated successfully', 'success');
                 // reload page to reflect status
-                location.reload();
+                setTimeout(() => location.reload(), 1000);
             }
         })();
         // Search and filter logic

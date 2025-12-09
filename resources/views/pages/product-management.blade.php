@@ -28,7 +28,7 @@
 
     <!-- Add Product Modal -->
     <div id="addModal" style="z-index:9999;" class="fixed inset-0 bg-black bg-opacity-40 hidden items-center justify-center">
-        <div class="bg-white rounded shadow-lg w-11/12 md:w-3/4 lg:w-2/3 p-6 relative max-h-[90vh] overflow-y-auto">
+        <div class="bg-white rounded shadow-lg w-11/12 md:w-3/4 lg:w-2/3 p-6 relative max-h-[90vh] overflow-y-auto" style="pointer-events: auto; z-index: 10000;">
             <button id="closeAddModal" class="absolute top-3 right-3 text-gray-600">✕</button>
             <h3 class="text-lg font-semibold mb-4">Add Product</h3>
 
@@ -190,7 +190,7 @@
 
 <!-- Edit Modal -->
 <div id="editModal" class="fixed inset-0 bg-black bg-opacity-40 hidden items-center justify-center z-50">
-    <div class="bg-white rounded shadow-lg w-11/12 md:w-11/12 lg:w-4/5 xl:w-11/12 p-6 relative max-h-[90vh] overflow-y-auto">
+    <div class="bg-white rounded shadow-lg w-11/12 md:w-11/12 lg:w-4/5 xl:w-11/12 p-6 relative max-h-[90vh] overflow-y-auto" style="pointer-events: auto;">
         <button id="closeEditModal" class="absolute top-3 right-3 text-gray-600">✕</button>
         <h3 class="text-lg font-semibold mb-4">Edit Product</h3>
 
@@ -273,7 +273,7 @@
 
 <!-- Delete confirm modal -->
 <div id="deleteModal" class="fixed inset-0 bg-black bg-opacity-40 hidden items-center justify-center z-50">
-    <div class="bg-white rounded shadow-lg w-96 p-6">
+    <div class="bg-white rounded shadow-lg w-96 p-6" style="pointer-events: auto;">
         <h4 class="text-lg font-semibold mb-4">Confirm Delete</h4>
         <p class="mb-4">Are you sure you want to delete this product? This action cannot be undone.</p>
         <div class="flex justify-end gap-3">
@@ -359,7 +359,6 @@
         }
 
         let _lastActiveElAdd = null;
-        let _addOutsideHandler = null;
         function showAddModal(){
             _lastActiveElAdd = document.activeElement;
             document.body.style.overflow = 'hidden';
@@ -372,16 +371,6 @@
             const dialog = addModal.querySelector('.bg-white');
             const focusables = getFocusableElements(dialog);
             if (focusables.length) focusables[0].focus();
-
-            // attach document-level mousedown handler to reliably catch outside clicks
-            _addOutsideHandler = function(ev){
-                try{
-                    if (!dialog.contains(ev.target)) {
-                        hideAddModal();
-                    }
-                }catch(e){}
-            };
-            document.addEventListener('mousedown', _addOutsideHandler);
         }
 
         function hideAddModal(){
@@ -391,7 +380,6 @@
             if (page) { page.style.pointerEvents = ''; page.removeAttribute('aria-hidden'); }
             document.body.style.overflow = '';
             try{ if (_lastActiveElAdd && typeof _lastActiveElAdd.focus === 'function') _lastActiveElAdd.focus(); }catch(e){}
-            if (_addOutsideHandler) { document.removeEventListener('mousedown', _addOutsideHandler); _addOutsideHandler = null; }
         }
 
         // expose to global so other handlers (global ESC) can use the same cleanup
