@@ -111,6 +111,17 @@
     </div>
 
     <script>
+        // Prevent going back to login page
+        (function() {
+            // Replace history state to remove login page from history
+            if (window.history && window.history.pushState) {
+                window.history.pushState(null, null, window.location.href);
+                window.onpopstate = function() {
+                    window.history.pushState(null, null, window.location.href);
+                };
+            }
+        })();
+
         let receivingsChartObj = null;
         let stockValueChartObj = null;
         let topSuppliersChartObj = null;

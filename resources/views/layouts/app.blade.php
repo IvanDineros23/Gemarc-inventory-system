@@ -123,5 +123,28 @@
                 </script>
             @endif
         </div>
+
+        <!-- Prevent back navigation to login/guest pages -->
+        <script>
+            (function() {
+                // Prevent going back to login or guest pages
+                if (window.history && window.history.pushState) {
+                    // Push current state
+                    window.history.pushState(null, null, window.location.href);
+                    
+                    // Prevent back button
+                    window.onpopstate = function() {
+                        window.history.pushState(null, null, window.location.href);
+                    };
+                }
+
+                // Handle page show event (for cached pages)
+                window.addEventListener('pageshow', function(event) {
+                    if (event.persisted) {
+                        window.location.reload();
+                    }
+                });
+            })();
+        </script>
     </body>
 </html>

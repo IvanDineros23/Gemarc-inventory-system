@@ -112,6 +112,34 @@
     </div>
 
     <script>
+    // Prevent browser cache and back button
+    (function() {
+        // Check if user is authenticated and redirect immediately
+        @auth
+            window.location.replace("{{ route('dashboard') }}");
+        @endauth
+
+        // Disable browser cache
+        window.history.forward();
+        
+        // Prevent pageshow events (back/forward cache)
+        window.addEventListener('pageshow', function(event) {
+            if (event.persisted || performance.navigation.type === 2) {
+                // Check auth status on page show
+                @auth
+                    window.location.replace("{{ route('dashboard') }}");
+                @else
+                    window.location.reload();
+                @endauth
+            }
+        });
+
+        // Prevent popstate (back button)
+        window.addEventListener('popstate', function(event) {
+            window.history.forward();
+        });
+    })();
+
     function togglePasswordVisibility() {
         const input = document.getElementById("password");
         const eyeOpen = document.getElementById("eye-open");
